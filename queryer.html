@@ -1,0 +1,69 @@
+<html>
+<head>
+<title>Query Parameter Replacement</title>
+
+<script>
+var convert = function() {
+	preProcess();
+	var originalQuery = document.getElementById("query").value;
+	var parameterList = document.getElementById("parameter").value;
+	if (!originalQuery || !parameterList) {
+		alert("Please fill in both fields: Parameterized Query and Parameter List.");
+		return;
+	}
+	document.getElementById("result").value =replaceParameter(originalQuery, parameterList);
+}
+
+var preProcess = function () {
+	// if everything is in the "Query" textarea, separate it.
+	var queryTextArea = document.getElementById("query").value;
+	var paramsRegex = /\[params=.*/g;
+	var paramsString = queryTextArea.match(paramsRegex);
+	if (paramsString) {
+		document.getElementById("query").value = queryTextArea.substr(0, queryTextArea.length - paramsString[0].length - 1);
+		document.getElementById("parameter").value = paramsString;
+	}
+}
+
+var replaceParameter = function(originalQuery, parameterList) {
+	
+	var parameterRegex = /\(([a-zA-Z]+)\) ([^,\]]+)/g;
+	var result = originalQuery;
+	
+	var placeHolderRegex = /\?/;
+	while (match = parameterRegex.exec(parameterList)) {		
+		// match[1] is the data type, match[2] is the value
+		result = result.replace(placeHolderRegex, parameterValue(match[1],  match[2]));
+	}
+	return result;
+}
+
+var parameterValue = function(dataType, dataValue) {
+	if (dataType == "String") {
+		return "'" + dataValue + "'";
+	}
+	
+	if (dataType == "Date"){
+		return "to_date('" + dataValue + "', 'yyyy-mm-dd')";
+	}
+	// all other types (including null), return as is	
+	return dataValue;	
+}
+
+var clearAll = function() {
+	document.getElementById("query").value = "";
+	document.getElementById("parameter").value = "";
+	document.getElementById("result").value = "";
+}
+
+</script>
+</head>
+<body><table>
+<tr><td valign="top">Parameterized Query *</td><td>Example: call sp_set_vpd_ctx(?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)<br>
+<textarea id="query" cols="100" rows = "10"></textarea><br></td></tr>
+<tr><td valign="top">Parameter List *</td><td>Example: [params=(String) VPD0060C17, (String) SUPERUSER, (String) G3QJYSB9DP40002B, (String) practitioner, (String) /wfn/chr/core, (null) null, (null) null, (null) null, (null) null, (String) N, (String) WFN, (String) en_US, (String) US]
+<br><textarea id="parameter" cols="100" rows = "5"></textarea></td></tr>
+<tr><td valign="top">Date Format in Parameters</td><td><input type="radio" id="dateFormat" checked value="yyyy-mm-dd"/> yyyy-mm-dd</td></tr>
+<tr><td colspan="2">&nbsp;&nbsp;&nbsp;<button onclick="convert()">Convert</button>&nbsp;&nbsp;&nbsp;<button onclick="clearAll()">Clear</button><td></tr>
+<tr><td valign="top">Result Query</td><td><textarea readonly="readonly" id="result" cols="100" rows = "10"></textarea></td></tr>
+</table></body></html>
