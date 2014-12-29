@@ -27,7 +27,7 @@ var preProcess = function () {
 
 var replaceParameter = function(originalQuery, parameterList) {
 	
-	var parameterRegex = /\(([a-zA-Z]+)\) ([^,\]]+)/g;
+	var parameterRegex = /\(([a-zA-Z]+)\) ([^,\]]*)/g;
 	var result = originalQuery;
 	
 	var placeHolderRegex = /\?/;
@@ -39,8 +39,8 @@ var replaceParameter = function(originalQuery, parameterList) {
 }
 
 var parameterValue = function(dataType, dataValue) {
-	if (dataType == "String") {
-		return "'" + dataValue + "'";
+	if (dataType == "String") {		
+		return "'" + dataValue.replace("&", "'||chr(38)||'") + "'";
 	}
 	
 	if (dataType == "Date"){
